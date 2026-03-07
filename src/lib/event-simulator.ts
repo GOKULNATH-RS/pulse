@@ -16,15 +16,17 @@ const SAMPLE_PRODUCTS: Product[] = [
   { productId: "p12", name: "Phone Case", category: "Electronics", price: 19.99, inventory: 150, imageUrl: "" },
 ];
 
-const SIMULATED_USERS = Array.from({ length: 50 }, (_, i) => ({
-  userId: `sim-user-${i + 1}`,
-  email: `user${i + 1}@example.com`,
-  name: `Simulated User ${i + 1}`,
-  preferredCategories: pickRandom(["Electronics", "Footwear", "Accessories", "Kitchen", "Fitness"], 2),
-  purchaseProbability: 0.05 + Math.random() * 0.2,
-  cartProbability: 0.15 + Math.random() * 0.3,
-  browsingIntensity: 0.5 + Math.random() * 0.5,
-}));
+const SIMULATED_USERS = [
+  {
+    userId: "gokul-1",
+    email: "gokulnathrs.personal@gmail.com",
+    name: "Gokul",
+    preferredCategories: ["Electronics", "Fitness"],
+    purchaseProbability: 0.12,
+    cartProbability: 0.25,
+    browsingIntensity: 0.8,
+  },
+];
 
 function pickRandom<T>(arr: T[], count: number): T[] {
   const shuffled = [...arr].sort(() => Math.random() - 0.5);

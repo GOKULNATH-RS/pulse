@@ -34,9 +34,9 @@ export function SimulationControls() {
 
           <input
             type="range"
-            min="100"
-            max="10000"
-            step="100"
+            min="1"
+            max="60"
+            step="1"
             value={rate}
             onChange={(e) => setRate(parseInt(e.target.value))}
             disabled={isRunning}
@@ -48,9 +48,9 @@ export function SimulationControls() {
             className="flex justify-between text-[10px] mt-1.5"
             style={{ color: "var(--text-quaternary)" }}
           >
-            <span>100</span>
-            <span>5,000</span>
-            <span>10,000</span>
+            <span>1</span>
+            <span>30</span>
+            <span>60</span>
           </div>
         </div>
 

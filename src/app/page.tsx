@@ -10,6 +10,7 @@ import {
 } from "@/components/charts";
 import { SimulationControls } from "@/components/simulation-controls";
 import { CampaignFeed } from "@/components/campaign-feed";
+import { EventFeed } from "@/components/event-feed";
 
 function ThemeToggle() {
   const { theme, toggle } = useTheme();
@@ -121,9 +122,12 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <SimulationControls />
           <div className="lg:col-span-2">
-            <CampaignFeed />
+            <EventFeed />
           </div>
         </div>
+
+        {/* Campaign Feed */}
+        <CampaignFeed />
 
         {/* Latency */}
         <LatencyChart history={history} />

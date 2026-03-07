@@ -1,5 +1,6 @@
 import { getRedis, KEYS } from "./redis";
 import { getUserProfile } from "./user-profile";
+import { predictChurnRisk } from "./churn-prediction";
 import { CampaignTrigger } from "./types";
 import { v4 as uuidv4 } from "uuid";
 
@@ -9,10 +10,10 @@ export async function evaluateCampaignTriggers(userId: string): Promise<Campaign
 
   const now = Date.now();
 
-  // 1. Cart Abandonment: user has items in cart and last activity > 30 min ago
+  // 1. Cart Abandonment: user has items in cart and has been browsing (not just added)
   if (
     profile.cartItems.length > 0 &&
-    now - profile.lastActivity > 30 * 60 * 1000
+    profile.recentlyViewed.length >= 2
   ) {
     return createTrigger(userId, "abandoned_cart", {
       cartItems: profile.cartItems,
@@ -20,11 +21,11 @@ export async function evaluateCampaignTriggers(userId: string): Promise<Campaign
     });
   }
 
-  // 2. Browse Abandonment: viewed 3+ products without adding to cart or purchasing
+  // 2. Browse Abandonment: viewed 3+ products without adding to cart
   if (
     profile.recentlyViewed.length >= 3 &&
     profile.cartItems.length === 0 &&
-    now - profile.lastActivity > 15 * 60 * 1000
+    profile.purchaseHistory.length === 0
   ) {
     return createTrigger(userId, "browse_abandonment", {
       viewedProducts: profile.recentlyViewed.slice(0, 5),
@@ -41,21 +42,22 @@ export async function evaluateCampaignTriggers(userId: string): Promise<Campaign
     }
   }
 
-  // 4. Re-engagement: user inactive for > 7 days but previously active
+  // 4. Re-engagement: high session count but low engagement per session
   if (
-    profile.sessionCount > 5 &&
-    now - profile.lastActivity > 7 * 24 * 60 * 60 * 1000
+    profile.sessionCount > 10 &&
+    profile.engagementScore / profile.sessionCount < 3
   ) {
     return createTrigger(userId, "re_engagement", {
-      daysSinceLastVisit: Math.floor((now - profile.lastActivity) / (24 * 60 * 60 * 1000)),
+      sessionCount: profile.sessionCount,
       previousEngagement: profile.engagementScore,
     });
   }
 
-  // 5. High Churn Risk
-  if (profile.churnRisk && profile.churnRisk > 0.7) {
+  // 5. High Churn Risk: compute churn score on the fly
+  const churnRisk = await predictChurnRisk(userId);
+  if (churnRisk > 0.6) {
     return createTrigger(userId, "high_churn_risk", {
-      churnRisk: profile.churnRisk,
+      churnRisk,
       engagementScore: profile.engagementScore,
     });
   }

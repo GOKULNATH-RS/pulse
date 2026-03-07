@@ -32,7 +32,7 @@ export function useMetrics(intervalMs = 2000) {
 
 export function useSimulation() {
   const [isRunning, setIsRunning] = useState(false);
-  const [rate, setRate] = useState(5000);
+  const [rate, setRate] = useState(10);
   const [loading, setLoading] = useState(false);
 
   const fetchStatus = useCallback(async () => {

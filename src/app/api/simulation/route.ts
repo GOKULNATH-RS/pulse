@@ -6,10 +6,11 @@ import { generatePersonalization } from "@/lib/personalization";
 import { sendEmail } from "@/lib/email-engine";
 import { setUserBasicInfo } from "@/lib/user-profile";
 import { SIMULATED_USERS } from "@/lib/event-simulator";
+import { getRedis } from "@/lib/redis";
 
 let simulationInterval: ReturnType<typeof setInterval> | null = null;
 let isRunning = false;
-let currentRate = 100; // events per minute
+let currentRate = 10; // events per minute (slow default)
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,12 +22,12 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ status: "already_running", rate: currentRate });
       }
 
-      currentRate = Math.min(Math.max(rate || 5000, 100), 10000);
-      const intervalMs = Math.max(Math.floor(60000 / currentRate), 10);
-      const batchSize = Math.max(1, Math.floor(currentRate / (60000 / intervalMs)));
+      currentRate = Math.min(Math.max(rate || 10, 1), 10000);
+      const intervalMs = Math.max(Math.floor(60000 / currentRate), 100);
+      const batchSize = 1; // one event at a time for clarity
 
-      // Initialize simulated user profiles
-      for (const user of SIMULATED_USERS.slice(0, 20)) {
+      // Initialize simulated user profile
+      for (const user of SIMULATED_USERS) {
         await setUserBasicInfo(user.userId, user.email, user.name);
       }
 
@@ -37,6 +38,12 @@ export async function POST(request: NextRequest) {
         for (const event of events) {
           try {
             await processEvent(event);
+
+            // Store recent event for UI feed
+            const redis = getRedis();
+            await redis.lpush("events:recent", JSON.stringify(event));
+            await redis.ltrim("events:recent", 0, 49);
+
             const trigger = await evaluateCampaignTriggers(event.userId);
             if (trigger) {
               const emailPayload = await generatePersonalization(trigger);
