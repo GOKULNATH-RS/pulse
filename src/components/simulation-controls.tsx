@@ -1,23 +1,37 @@
 "use client";
 
 import { useSimulation } from "@/hooks/use-metrics";
-import { Play, Square, Gauge } from "lucide-react";
 
 export function SimulationControls() {
   const { isRunning, rate, setRate, start, stop, loading } = useSimulation();
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-        <Gauge className="w-5 h-5" />
-        Event Simulation
+    <div className="card p-5 animate-fade-in" style={{ animationDelay: "480ms" }}>
+      <h3
+        className="text-[13px] font-medium uppercase tracking-[0.06em] mb-5"
+        style={{ color: "var(--text-tertiary)" }}
+      >
+        Simulation
       </h3>
 
-      <div className="space-y-4">
+      <div className="space-y-5">
+        {/* Rate display */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Event Rate: {rate.toLocaleString()} events/min
-          </label>
+          <div className="flex items-baseline justify-between mb-3">
+            <span className="text-[13px] font-medium" style={{ color: "var(--text-secondary)" }}>
+              Event Rate
+            </span>
+            <span
+              className="text-[20px] font-semibold tracking-tight"
+              style={{ color: "var(--text-primary)", fontVariantNumeric: "tabular-nums" }}
+            >
+              {rate.toLocaleString()}
+              <span className="text-[12px] font-normal ml-1" style={{ color: "var(--text-tertiary)" }}>
+                /min
+              </span>
+            </span>
+          </div>
+
           <input
             type="range"
             min="100"
@@ -26,38 +40,59 @@ export function SimulationControls() {
             value={rate}
             onChange={(e) => setRate(parseInt(e.target.value))}
             disabled={isRunning}
-            className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
+            className="w-full"
+            style={{ opacity: isRunning ? 0.4 : 1 }}
           />
-          <div className="flex justify-between text-xs text-gray-400 mt-1">
-            <span>100/min</span>
-            <span>5,000/min</span>
-            <span>10,000/min</span>
+
+          <div
+            className="flex justify-between text-[10px] mt-1.5"
+            style={{ color: "var(--text-quaternary)" }}
+          >
+            <span>100</span>
+            <span>5,000</span>
+            <span>10,000</span>
           </div>
         </div>
 
-        <div className="flex gap-3">
+        {/* Action buttons */}
+        <div className="flex gap-2">
           <button
             onClick={() => start(rate)}
             disabled={isRunning || loading}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors"
+            className="flex-1 h-9 rounded-lg text-[13px] font-medium transition-all duration-200 cursor-pointer disabled:cursor-not-allowed"
+            style={{
+              background: isRunning || loading ? "var(--bg-inset)" : "var(--accent)",
+              color: isRunning || loading ? "var(--text-quaternary)" : "#fff",
+              border: "none",
+            }}
           >
-            <Play className="w-4 h-4" />
-            {loading ? "Starting..." : "Start"}
+            {loading && !isRunning ? "Starting…" : "Start"}
           </button>
           <button
             onClick={stop}
             disabled={!isRunning || loading}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors"
+            className="flex-1 h-9 rounded-lg text-[13px] font-medium transition-all duration-200 cursor-pointer disabled:cursor-not-allowed"
+            style={{
+              background: !isRunning || loading ? "var(--bg-inset)" : "var(--bg-tertiary)",
+              color: !isRunning || loading ? "var(--text-quaternary)" : "var(--text-primary)",
+              border: `1px solid ${!isRunning || loading ? "transparent" : "var(--border-primary)"}`,
+            }}
           >
-            <Square className="w-4 h-4" />
-            {loading ? "Stopping..." : "Stop"}
+            {loading && isRunning ? "Stopping…" : "Stop"}
           </button>
         </div>
 
-        <div className="flex items-center gap-2 text-sm">
-          <div className={`w-2.5 h-2.5 rounded-full ${isRunning ? "bg-green-500 animate-pulse" : "bg-gray-400"}`} />
-          <span className="text-gray-600 dark:text-gray-400">
-            {isRunning ? `Running at ${rate.toLocaleString()} events/min` : "Simulation stopped"}
+        {/* Status indicator */}
+        <div className="flex items-center gap-2">
+          <div
+            className="w-[6px] h-[6px] rounded-full"
+            style={{
+              background: isRunning ? "var(--success)" : "var(--text-quaternary)",
+              animation: isRunning ? "pulse-dot 2s ease-in-out infinite" : "none",
+            }}
+          />
+          <span className="text-[12px]" style={{ color: "var(--text-tertiary)" }}>
+            {isRunning ? `Generating ${rate.toLocaleString()} events/min` : "Idle"}
           </span>
         </div>
       </div>

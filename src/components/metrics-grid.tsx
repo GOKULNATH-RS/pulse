@@ -1,40 +1,59 @@
 "use client";
 
 import { MetricsSnapshot } from "@/lib/types";
-import {
-  Activity,
-  Mail,
-  MailCheck,
-  MailX,
-  Users,
-  Zap,
-  Clock,
-  TrendingUp,
-} from "lucide-react";
 
 interface MetricCardProps {
-  title: string;
+  label: string;
   value: string | number;
-  icon: React.ReactNode;
-  color: string;
-  subtitle?: string;
+  sub?: string;
+  accent?: "default" | "success" | "warning" | "danger";
+  delay?: number;
 }
 
-function MetricCard({ title, value, icon, color, subtitle }: MetricCardProps) {
+function MetricCard({ label, value, sub, accent = "default", delay = 0 }: MetricCardProps) {
+  const accentColors: Record<string, string> = {
+    default: "var(--accent)",
+    success: "var(--success)",
+    warning: "var(--warning)",
+    danger: "var(--danger)",
+  };
+
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 hover:shadow-md transition-shadow">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
-          <p className={`text-2xl font-bold mt-1 ${color}`}>{value}</p>
-          {subtitle && (
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{subtitle}</p>
-          )}
-        </div>
-        <div className={`p-3 rounded-lg bg-opacity-10 ${color.replace("text-", "bg-")}`}>
-          {icon}
-        </div>
+    <div
+      className="card px-5 py-4 animate-fade-in"
+      style={{ animationDelay: `${delay}ms` }}
+    >
+      <p
+        className="text-[11px] font-medium uppercase tracking-[0.08em] mb-2"
+        style={{ color: "var(--text-tertiary)" }}
+      >
+        {label}
+      </p>
+      <div className="flex items-baseline gap-2">
+        <span
+          className="text-[28px] font-semibold tracking-tight leading-none"
+          style={{ color: "var(--text-primary)", fontVariantNumeric: "tabular-nums" }}
+        >
+          {value}
+        </span>
+        {sub && (
+          <span
+            className="text-[12px] font-medium"
+            style={{ color: accentColors[accent] }}
+          >
+            {sub}
+          </span>
+        )}
       </div>
+    </div>
+  );
+}
+
+function SkeletonCard() {
+  return (
+    <div className="card px-5 py-4">
+      <div className="skeleton h-3 w-20 mb-3" />
+      <div className="skeleton h-7 w-16" />
     </div>
   );
 }
@@ -42,68 +61,64 @@ function MetricCard({ title, value, icon, color, subtitle }: MetricCardProps) {
 export function MetricsGrid({ metrics }: { metrics: MetricsSnapshot | null }) {
   if (!metrics) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 animate-pulse">
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24 mb-3"></div>
-            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
-          </div>
+          <SkeletonCard key={i} />
         ))}
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
       <MetricCard
-        title="Total Events"
+        label="Total Events"
         value={metrics.totalEvents.toLocaleString()}
-        icon={<Activity className="w-6 h-6 text-blue-500" />}
-        color="text-blue-600"
-        subtitle={`${metrics.eventsPerMinute} events/min`}
+        sub={`${metrics.eventsPerMinute}/min`}
+        delay={0}
       />
       <MetricCard
-        title="Events/Second"
+        label="Throughput"
         value={metrics.eventsPerSecond.toFixed(1)}
-        icon={<Zap className="w-6 h-6 text-yellow-500" />}
-        color="text-yellow-600"
+        sub="events/s"
+        delay={40}
       />
       <MetricCard
-        title="Active Users"
+        label="Active Users"
         value={metrics.activeUsers}
-        icon={<Users className="w-6 h-6 text-green-500" />}
-        color="text-green-600"
-        subtitle="Last 60 seconds"
+        sub="60s window"
+        accent="success"
+        delay={80}
       />
       <MetricCard
-        title="Campaigns Triggered"
+        label="Campaigns"
         value={metrics.campaignsTriggered.toLocaleString()}
-        icon={<TrendingUp className="w-6 h-6 text-purple-500" />}
-        color="text-purple-600"
+        sub="triggered"
+        delay={120}
       />
       <MetricCard
-        title="Emails Pending"
+        label="Pending"
         value={metrics.emailsPending}
-        icon={<Mail className="w-6 h-6 text-orange-500" />}
-        color="text-orange-600"
+        accent={metrics.emailsPending > 10 ? "warning" : "default"}
+        delay={160}
       />
       <MetricCard
-        title="Emails Sent"
+        label="Emails Sent"
         value={metrics.emailsSent.toLocaleString()}
-        icon={<MailCheck className="w-6 h-6 text-emerald-500" />}
-        color="text-emerald-600"
+        accent="success"
+        delay={200}
       />
       <MetricCard
-        title="Success Rate"
+        label="Success Rate"
         value={`${metrics.emailSuccessRate}%`}
-        icon={<MailX className="w-6 h-6 text-red-500" />}
-        color={metrics.emailSuccessRate >= 90 ? "text-emerald-600" : "text-red-600"}
+        accent={metrics.emailSuccessRate >= 90 ? "success" : "danger"}
+        delay={240}
       />
       <MetricCard
-        title="Avg Latency"
+        label="Latency"
         value={`${metrics.avgProcessingLatency}ms`}
-        icon={<Clock className="w-6 h-6 text-indigo-500" />}
-        color={metrics.avgProcessingLatency < 50 ? "text-indigo-600" : "text-red-600"}
+        accent={metrics.avgProcessingLatency < 50 ? "success" : "danger"}
+        delay={280}
       />
     </div>
   );
