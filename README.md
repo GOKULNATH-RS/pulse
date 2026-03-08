@@ -47,29 +47,35 @@
 ## Architecture
 
 ```mermaid
-graph TB
-    subgraph Next.js 16 Application
-        UI[Dashboard UI<br/>React 19]
-        API[API Gateway<br/>JWT Auth]
-        SIM[Event Simulator<br/>5 user personas]
-        CHARTS[Recharts<br/>Live Charts]
-        EP[Event Processor]
-        CT[Campaign Trigger Engine<br/>5 types]
-        CHURN[Churn ML Prediction]
-        PERS[Personalization Engine]
-    end
 
+flowchart TB
+ subgraph subGraph0["Next.js 16 Application"]
+        UI["Dashboard UI<br>React 19"]
+        API["API Gateway<br>JWT Auth"]
+        SIM["Event Simulator<br>5 user personas"]
+        CHARTS["Recharts<br>Live Charts"]
+        EP["Event Processor"]
+        CT["Campaign Trigger Engine<br>5 types"]
+        CHURN["Churn ML Prediction"]
+        PERS["Personalization Engine"]
+  end
     UI --> CHARTS
     API --> EP
-    SIM --> EP
-    EP --> CT
-    EP --> CHURN
+    SIM L_SIM_EP@--> EP
+    EP L_EP_CT@--> CT
+    EP L_EP_CHURN@--> CHURN
+    EP L_EP_REDIS@--> REDIS[("Redis 7<br>Streams · Sorted Sets<br>Hashes · Lists")]
     CT --> PERS
     CHURN --> CT
+    PERS L_PERS_GAS@--> GAS["Google Apps Script<br>GmailApp.sendEmail"]
+    GAS L_GAS_REDIS@--> REDIS
 
-    EP --> REDIS[(Redis 7<br/>Streams · Sorted Sets<br/>Hashes · Lists)]
-    PERS --> GAS[Google Apps Script<br/>GmailApp.sendEmail]
-    GAS --> REDIS
+    L_SIM_EP@{ animation: slow }
+    L_EP_CT@{ animation: fast }
+    L_EP_CHURN@{ animation: fast }
+    L_EP_REDIS@{ animation: fast }
+    L_PERS_GAS@{ animation: slow }
+    L_GAS_REDIS@{ animation: slow }
 ```
 
 ### Data Flow
