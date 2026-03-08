@@ -1,6 +1,5 @@
 <div align="center">
   <img src="public/banner.png" alt="Pulse Banner" width="100%" />
-  <h1>Pulse</h1>
   <p><strong>Real-Time Personalized Email Campaign Optimizer</strong></p>
   <p>Process user behavior events in real-time, predict churn, trigger personalized email campaigns, and deliver them — all powered by Redis with sub-50ms latency.</p>
 
