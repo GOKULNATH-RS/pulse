@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Pulse — Campaign Optimizer",
+  title: "Pulse",
   description: "Real-time personalized email campaign optimization",
 };
 

@@ -16,7 +16,17 @@ const SAMPLE_PRODUCTS: Product[] = [
   { productId: "p12", name: "Phone Case", category: "Electronics", price: 19.99, inventory: 150, imageUrl: "" },
 ];
 
-const SIMULATED_USERS = [
+interface SimulatedUser {
+  userId: string;
+  email: string;
+  name: string;
+  preferredCategories: string[];
+  purchaseProbability: number;
+  cartProbability: number;
+  browsingIntensity: number;
+}
+
+let SIMULATED_USERS: SimulatedUser[] = [
   {
     // Gokul – Electronics enthusiast, moderate buyer
     userId: "gokul-1",
@@ -68,6 +78,14 @@ const SIMULATED_USERS = [
     browsingIntensity: 0.65,
   },
 ];
+
+export function getSimulatedUsers(): SimulatedUser[] {
+  return SIMULATED_USERS;
+}
+
+export function setSimulatedUsers(users: SimulatedUser[]): void {
+  SIMULATED_USERS = users;
+}
 
 function pickRandom<T>(arr: T[], count: number): T[] {
   const shuffled = [...arr].sort(() => Math.random() - 0.5);

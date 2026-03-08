@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateBatch } from "@/lib/event-simulator";
+import { generateBatch, getSimulatedUsers, setSimulatedUsers } from "@/lib/event-simulator";
 import { processEvent } from "@/lib/event-processor";
 import { evaluateCampaignTriggers } from "@/lib/campaign-triggers";
 import { generatePersonalization } from "@/lib/personalization";
 import { sendEmail } from "@/lib/email-engine";
 import { setUserBasicInfo } from "@/lib/user-profile";
-import { SIMULATED_USERS } from "@/lib/event-simulator";
 import { getRedis } from "@/lib/redis";
 import { setEmailCooldown } from "@/lib/campaign-triggers";
 
@@ -31,7 +30,7 @@ export async function POST(request: NextRequest) {
       const batchSize = 1; // one event at a time for clarity
 
       // Initialize simulated user profile
-      for (const user of SIMULATED_USERS) {
+      for (const user of getSimulatedUsers()) {
         await setUserBasicInfo(user.userId, user.email, user.name);
       }
 
@@ -86,8 +85,17 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    if (action === "update_users") {
+      const { users } = body;
+      if (Array.isArray(users) && users.length > 0) {
+        setSimulatedUsers(users);
+        return NextResponse.json({ status: "users_updated", users: getSimulatedUsers() });
+      }
+      return NextResponse.json({ error: "Provide a non-empty users array" }, { status: 400 });
+    }
+
     return NextResponse.json(
-      { error: "Invalid action. Use 'start', 'stop', or 'status'" },
+      { error: "Invalid action. Use 'start', 'stop', 'status', or 'update_users'" },
       { status: 400 }
     );
   } catch {
@@ -103,6 +111,7 @@ export async function GET() {
     isRunning,
     rate: currentRate,
     emailCooldown: currentCooldown,
+    users: getSimulatedUsers(),
   });
 }
 
