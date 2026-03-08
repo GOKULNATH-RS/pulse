@@ -33,6 +33,7 @@ export function useMetrics(intervalMs = 2000) {
 export function useSimulation() {
   const [isRunning, setIsRunning] = useState(false);
   const [rate, setRate] = useState(10);
+  const [emailCooldown, setEmailCooldown] = useState(30); // seconds between emails
   const [loading, setLoading] = useState(false);
 
   const fetchStatus = useCallback(async () => {
@@ -41,6 +42,7 @@ export function useSimulation() {
       const data = await res.json();
       setIsRunning(data.isRunning);
       setRate(data.rate);
+      if (data.emailCooldown) setEmailCooldown(data.emailCooldown);
     } catch {
       // ignore
     }
@@ -50,17 +52,22 @@ export function useSimulation() {
     fetchStatus();
   }, [fetchStatus]);
 
-  const start = async (newRate?: number) => {
+  const start = async (newRate?: number, newCooldown?: number) => {
     setLoading(true);
     try {
       const res = await fetch("/api/simulation", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "start", rate: newRate || rate }),
+        body: JSON.stringify({
+          action: "start",
+          rate: newRate ?? rate,
+          emailCooldown: newCooldown ?? emailCooldown,
+        }),
       });
       const data = await res.json();
       setIsRunning(data.status === "started" || data.status === "already_running");
       if (data.rate) setRate(data.rate);
+      if (data.emailCooldown) setEmailCooldown(data.emailCooldown);
     } finally {
       setLoading(false);
     }
@@ -80,5 +87,5 @@ export function useSimulation() {
     }
   };
 
-  return { isRunning, rate, setRate, start, stop, loading };
+  return { isRunning, rate, setRate, emailCooldown, setEmailCooldown, start, stop, loading };
 }

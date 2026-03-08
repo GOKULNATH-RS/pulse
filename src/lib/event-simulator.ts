@@ -18,6 +18,7 @@ const SAMPLE_PRODUCTS: Product[] = [
 
 const SIMULATED_USERS = [
   {
+    // Gokul – Electronics enthusiast, moderate buyer
     userId: "gokul-1",
     email: "gokulnathrs.personal@gmail.com",
     name: "Gokul",
@@ -25,6 +26,46 @@ const SIMULATED_USERS = [
     purchaseProbability: 0.12,
     cartProbability: 0.25,
     browsingIntensity: 0.8,
+  },
+  {
+    // Gokul – Kitchen & home persona, frequent buyer
+    userId: "gokul-2",
+    email: "gokulnathrs.personal@gmail.com",
+    name: "Gokul",
+    preferredCategories: ["Kitchen", "Accessories"],
+    purchaseProbability: 0.22,
+    cartProbability: 0.35,
+    browsingIntensity: 0.55,
+  },
+  {
+    // Dhana – Fitness & footwear browser, rarely buys
+    userId: "dhana-1",
+    email: "dhanaseelanm56@gmail.com",
+    name: "Dhana",
+    preferredCategories: ["Footwear", "Fitness"],
+    purchaseProbability: 0.05,
+    cartProbability: 0.18,
+    browsingIntensity: 0.9,
+  },
+  {
+    // Dhana – Electronics window-shopper, at-risk of churning
+    userId: "dhana-2",
+    email: "dhanaseelanm56@gmail.com",
+    name: "Dhana",
+    preferredCategories: ["Electronics", "Accessories"],
+    purchaseProbability: 0.04,
+    cartProbability: 0.10,
+    browsingIntensity: 0.35,
+  },
+  {
+    // Dhana – Deal seeker, buys only with discounts
+    userId: "dhana-3",
+    email: "dhanaseelanm56@gmail.com",
+    name: "Dhana",
+    preferredCategories: ["Kitchen", "Fitness"],
+    purchaseProbability: 0.18,
+    cartProbability: 0.30,
+    browsingIntensity: 0.65,
   },
 ];
 

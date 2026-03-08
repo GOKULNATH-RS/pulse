@@ -47,96 +47,123 @@ function doGet() {
 
 function generateEmailHtml(payload) {
   var p = payload.personalization;
-  
-  var recommendationsHtml = "";
-  if (p.recommendations && p.recommendations.length > 0) {
-    recommendationsHtml = '<h2 style="color: #1a1a2e; font-size: 20px; margin-top: 30px;">Recommended For You</h2>';
-    recommendationsHtml += '<div style="display: flex; flex-wrap: wrap; gap: 16px; margin-top: 16px;">';
-    
-    p.recommendations.forEach(function(rec) {
-      recommendationsHtml += '<div style="flex: 1; min-width: 200px; border: 1px solid #e0e0e0; border-radius: 12px; padding: 16px; text-align: center;">';
-      recommendationsHtml += '<h3 style="color: #1a1a2e; font-size: 16px; margin: 8px 0;">' + escapeHtml(rec.productName) + '</h3>';
-      recommendationsHtml += '<p style="color: #16213e; font-size: 18px; font-weight: bold;">$' + rec.price.toFixed(2) + '</p>';
-      recommendationsHtml += '<p style="color: #666; font-size: 12px;">' + escapeHtml(rec.reason) + '</p>';
-      recommendationsHtml += '</div>';
-    });
-    
-    recommendationsHtml += '</div>';
-  }
-  
-  var discountHtml = "";
-  if (p.discount) {
-    discountHtml = '<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px; padding: 24px; margin: 24px 0; text-align: center;">';
-    discountHtml += '<h2 style="font-size: 24px; margin: 0 0 8px 0;">Special Offer!</h2>';
-    discountHtml += '<p style="font-size: 36px; font-weight: bold; margin: 0;">' + p.discount.percentage + '% OFF</p>';
-    discountHtml += '<p style="margin: 8px 0 0 0;">' + escapeHtml(p.discount.description) + '</p>';
-    discountHtml += '<p style="background: rgba(255,255,255,0.2); display: inline-block; padding: 8px 16px; border-radius: 8px; margin-top: 12px; font-family: monospace; font-size: 18px;">' + escapeHtml(p.discount.code) + '</p>';
-    discountHtml += '</div>';
-  }
-  
-  var inventoryHtml = "";
-  if (p.inventoryAlerts && p.inventoryAlerts.length > 0) {
-    inventoryHtml = '<div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 12px; margin: 16px 0;">';
-    inventoryHtml += '<strong style="color: #856404;">⚡ Limited Stock Alert</strong>';
-    p.inventoryAlerts.forEach(function(alert) {
-      inventoryHtml += '<p style="color: #856404; margin: 4px 0 0 0; font-size: 14px;">' + escapeHtml(alert) + '</p>';
-    });
-    inventoryHtml += '</div>';
-  }
-  
+  var esc = escapeHtml;
+
+  // ── Cart section ──────────────────────────────────────────────────────────
   var cartHtml = "";
   if (p.cartReminder && p.cartReminder.length > 0) {
-    cartHtml = '<h2 style="color: #1a1a2e; font-size: 20px; margin-top: 30px;">Your Cart Items</h2>';
-    cartHtml += '<table style="width: 100%; border-collapse: collapse; margin-top: 12px;">';
-    cartHtml += '<tr style="background: #f8f9fa;"><th style="padding: 10px; text-align: left;">Product</th><th style="padding: 10px; text-align: center;">Qty</th><th style="padding: 10px; text-align: right;">Price</th></tr>';
-    
     var total = 0;
+    var cartRows = "";
     p.cartReminder.forEach(function(item) {
-      var itemTotal = item.price * item.quantity;
-      total += itemTotal;
-      cartHtml += '<tr><td style="padding: 10px; border-top: 1px solid #e0e0e0;">' + escapeHtml(item.productName) + '</td>';
-      cartHtml += '<td style="padding: 10px; border-top: 1px solid #e0e0e0; text-align: center;">' + item.quantity + '</td>';
-      cartHtml += '<td style="padding: 10px; border-top: 1px solid #e0e0e0; text-align: right;">$' + itemTotal.toFixed(2) + '</td></tr>';
+      var lineTotal = item.price * item.quantity;
+      total += lineTotal;
+      cartRows += '<tr>'
+        + '<td style="padding:12px 16px;font-size:14px;color:#374151;border-top:1px solid #e5e7eb;">' + esc(item.productName) + '</td>'
+        + '<td style="padding:12px 16px;font-size:14px;color:#374151;text-align:center;border-top:1px solid #e5e7eb;width:60px;">' + item.quantity + '</td>'
+        + '<td style="padding:12px 16px;font-size:14px;color:#374151;text-align:right;border-top:1px solid #e5e7eb;width:90px;">$' + lineTotal.toFixed(2) + '</td>'
+        + '</tr>';
     });
-    
-    cartHtml += '<tr style="font-weight: bold;"><td colspan="2" style="padding: 10px; border-top: 2px solid #1a1a2e;">Total</td>';
-    cartHtml += '<td style="padding: 10px; border-top: 2px solid #1a1a2e; text-align: right;">$' + total.toFixed(2) + '</td></tr>';
-    cartHtml += '</table>';
+    cartHtml = '<p style="margin:0 0 10px;font-size:12px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.06em;">Your cart</p>'
+      + '<table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #e5e7eb;margin-bottom:28px;">'
+      + '<tr style="background:#f9fafb;">'
+      + '<td style="padding:10px 16px;font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:0.05em;">Product</td>'
+      + '<td style="padding:10px 16px;font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:0.05em;text-align:center;width:60px;">Qty</td>'
+      + '<td style="padding:10px 16px;font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:0.05em;text-align:right;width:90px;">Price</td>'
+      + '</tr>'
+      + cartRows
+      + '<tr style="background:#f9fafb;">'
+      + '<td colspan="2" style="padding:12px 16px;font-size:14px;font-weight:600;color:#111827;border-top:2px solid #e5e7eb;">Total</td>'
+      + '<td style="padding:12px 16px;font-size:15px;font-weight:700;color:#111827;text-align:right;border-top:2px solid #e5e7eb;">$' + total.toFixed(2) + '</td>'
+      + '</tr>'
+      + '</table>';
   }
-  
-  var html = '<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="margin: 0; padding: 0; background: #f5f5f5; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif;">';
-  html += '<div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">';
-  
-  // Header
-  html += '<div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 32px; text-align: center;">';
-  html += '<h1 style="color: white; font-size: 28px; margin: 0;">⚡ Pulse</h1>';
-  html += '<p style="color: #a0aec0; margin: 8px 0 0 0;">Your Personal Shopping Assistant</p>';
-  html += '</div>';
-  
-  // Body
-  html += '<div style="padding: 32px;">';
-  html += '<p style="color: #333; font-size: 16px; line-height: 1.6;">' + escapeHtml(p.greeting) + '</p>';
-  
-  html += cartHtml;
-  html += discountHtml;
-  html += inventoryHtml;
-  html += recommendationsHtml;
-  
-  // CTA Button
-  html += '<div style="text-align: center; margin-top: 32px;">';
-  html += '<a href="' + escapeHtml(p.ctaUrl) + '" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-size: 16px; font-weight: bold;">' + escapeHtml(p.ctaText) + '</a>';
-  html += '</div>';
-  
-  html += '</div>';
-  
-  // Footer
-  html += '<div style="background: #f8f9fa; padding: 24px; text-align: center; color: #666; font-size: 12px;">';
-  html += '<p>Powered by Pulse Email Campaign Optimizer</p>';
-  html += '<p>You received this because of your activity on our platform.</p>';
-  html += '</div>';
-  
-  html += '</div></body></html>';
-  
+
+  // ── Discount section ──────────────────────────────────────────────────────
+  var discountHtml = "";
+  if (p.discount) {
+    discountHtml = '<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f9fafb;border:1px solid #e5e7eb;margin-bottom:28px;">'
+      + '<tr><td style="padding:24px 28px;">'
+      + '<p style="margin:0 0 4px;font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:0.06em;">Special offer</p>'
+      + '<p style="margin:0 0 8px;font-size:28px;font-weight:700;color:#111827;line-height:1;">' + p.discount.percentage + '% off</p>'
+      + '<p style="margin:0 0 16px;font-size:14px;color:#6b7280;">' + esc(p.discount.description) + '</p>'
+      + '<span style="display:inline-block;background:#ffffff;border:1.5px dashed #d1d5db;padding:8px 16px;font-size:16px;font-weight:700;color:#111827;letter-spacing:0.1em;font-family:monospace;">' + esc(p.discount.code) + '</span>'
+      + '</td></tr>'
+      + '</table>';
+  }
+
+  // ── Inventory alerts ──────────────────────────────────────────────────────
+  var inventoryHtml = "";
+  if (p.inventoryAlerts && p.inventoryAlerts.length > 0) {
+    var alertLines = "";
+    p.inventoryAlerts.forEach(function(alert) {
+      alertLines += '<p style="margin:4px 0 0;font-size:13px;color:#c2410c;">' + esc(alert) + '</p>';
+    });
+    inventoryHtml = '<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#fff7ed;border:1px solid #fed7aa;margin-bottom:28px;">'
+      + '<tr><td style="padding:14px 16px;">'
+      + '<p style="margin:0 0 2px;font-size:12px;font-weight:600;color:#c2410c;text-transform:uppercase;letter-spacing:0.05em;">Low stock</p>'
+      + alertLines
+      + '</td></tr>'
+      + '</table>';
+  }
+
+  // ── Recommendations ───────────────────────────────────────────────────────
+  var recommendationsHtml = "";
+  if (p.recommendations && p.recommendations.length > 0) {
+    var recCells = "";
+    p.recommendations.forEach(function(rec, index) {
+      if (index > 0) {
+        recCells += '<td style="width:16px;font-size:0;line-height:0;">&nbsp;</td>';
+      }
+      recCells += '<td valign="top" style="border:1px solid #e5e7eb;padding:16px;text-align:center;">'
+        + '<p style="margin:0 0 4px;font-size:14px;font-weight:600;color:#111827;">' + esc(rec.productName) + '</p>'
+        + '<p style="margin:0 0 6px;font-size:18px;font-weight:700;color:#111827;">$' + rec.price.toFixed(2) + '</p>'
+        + '<p style="margin:0;font-size:12px;color:#9ca3af;">' + esc(rec.reason) + '</p>'
+        + '</td>';
+    });
+    recommendationsHtml = '<p style="margin:0 0 10px;font-size:12px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.06em;">Picked for you</p>'
+      + '<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:28px;">'
+      + '<tr>' + recCells + '</tr>'
+      + '</table>';
+  }
+
+  // ── Full template ─────────────────────────────────────────────────────────
+  var html = '<!DOCTYPE html><html>'
+    + '<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>'
+    + '<body style="margin:0;padding:0;background:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,Helvetica,Arial,sans-serif;">'
+    + '<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f3f4f6;">'
+    + '<tr><td align="center" style="padding:40px 16px;">'
+    + '<table cellpadding="0" cellspacing="0" border="0" width="560" style="background:#ffffff;border:1px solid #e5e7eb;">'
+
+    // Header
+    + '<tr><td style="padding:28px 40px 20px;border-bottom:1px solid #f3f4f6;">'
+    + '<p style="margin:0;font-size:20px;font-weight:800;color:#111827;letter-spacing:-0.5px;">Pulse</p>'
+    + '</td></tr>'
+
+    // Body
+    + '<tr><td style="padding:36px 40px;">'
+    + '<p style="margin:0 0 28px;font-size:15px;line-height:1.7;color:#374151;">' + esc(p.greeting) + '</p>'
+    + cartHtml
+    + discountHtml
+    + inventoryHtml
+    + recommendationsHtml
+
+    // CTA
+    + '<table cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td align="center">'
+    + '<a href="' + esc(p.ctaUrl) + '" style="display:inline-block;background:#111827;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;padding:13px 32px;letter-spacing:0.01em;">'
+    + esc(p.ctaText)
+    + '</a>'
+    + '</td></tr></table>'
+    + '</td></tr>'
+
+    // Footer
+    + '<tr><td style="padding:20px 40px;border-top:1px solid #f3f4f6;">'
+    + '<p style="margin:0;font-size:12px;color:#9ca3af;line-height:1.5;">You\'re receiving this because of your recent activity on Pulse. &copy; 2026 Pulse.</p>'
+    + '</td></tr>'
+
+    + '</table>'
+    + '</td></tr></table>'
+    + '</body></html>';
+
   return html;
 }
 

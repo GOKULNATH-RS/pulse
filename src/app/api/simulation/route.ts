@@ -7,22 +7,26 @@ import { sendEmail } from "@/lib/email-engine";
 import { setUserBasicInfo } from "@/lib/user-profile";
 import { SIMULATED_USERS } from "@/lib/event-simulator";
 import { getRedis } from "@/lib/redis";
+import { setEmailCooldown } from "@/lib/campaign-triggers";
 
 let simulationInterval: ReturnType<typeof setInterval> | null = null;
 let isRunning = false;
-let currentRate = 10; // events per minute (slow default)
+let currentRate = 10;      // events per minute
+let currentCooldown = 30; // email cooldown seconds
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { action, rate } = body;
+    const { action, rate, emailCooldown } = body;
 
     if (action === "start") {
       if (isRunning) {
-        return NextResponse.json({ status: "already_running", rate: currentRate });
+        return NextResponse.json({ status: "already_running", rate: currentRate, emailCooldown: currentCooldown });
       }
 
       currentRate = Math.min(Math.max(rate || 10, 1), 10000);
+      currentCooldown = Math.min(Math.max(emailCooldown || 30, 5), 3600);
+      setEmailCooldown(currentCooldown);
       const intervalMs = Math.max(Math.floor(60000 / currentRate), 100);
       const batchSize = 1; // one event at a time for clarity
 
@@ -60,6 +64,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         status: "started",
         rate: currentRate,
+        emailCooldown: currentCooldown,
         batchSize,
         intervalMs,
       });
@@ -97,6 +102,7 @@ export async function GET() {
   return NextResponse.json({
     isRunning,
     rate: currentRate,
+    emailCooldown: currentCooldown,
   });
 }
 

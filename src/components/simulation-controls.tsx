@@ -2,8 +2,13 @@
 
 import { useSimulation } from "@/hooks/use-metrics";
 
+function formatCooldown(s: number): string {
+  if (s < 60) return `${s}s`;
+  return `${Math.floor(s / 60)}m ${s % 60 > 0 ? `${s % 60}s` : ""}`.trim();
+}
+
 export function SimulationControls() {
-  const { isRunning, rate, setRate, start, stop, loading } = useSimulation();
+  const { isRunning, rate, setRate, emailCooldown, setEmailCooldown, start, stop, loading } = useSimulation();
 
   return (
     <div className="card p-5 animate-fade-in" style={{ animationDelay: "480ms" }}>
@@ -15,7 +20,7 @@ export function SimulationControls() {
       </h3>
 
       <div className="space-y-5">
-        {/* Rate display */}
+        {/* Event Rate */}
         <div>
           <div className="flex items-baseline justify-between mb-3">
             <span className="text-[13px] font-medium" style={{ color: "var(--text-secondary)" }}>
@@ -54,10 +59,49 @@ export function SimulationControls() {
           </div>
         </div>
 
+        {/* Email Cooldown */}
+        <div>
+          <div className="flex items-baseline justify-between mb-3">
+            <span className="text-[13px] font-medium" style={{ color: "var(--text-secondary)" }}>
+              Email Cooldown
+            </span>
+            <span
+              className="text-[20px] font-semibold tracking-tight"
+              style={{ color: "var(--text-primary)", fontVariantNumeric: "tabular-nums" }}
+            >
+              {formatCooldown(emailCooldown)}
+            </span>
+          </div>
+
+          <input
+            type="range"
+            min="5"
+            max="300"
+            step="5"
+            value={emailCooldown}
+            onChange={(e) => setEmailCooldown(parseInt(e.target.value))}
+            disabled={isRunning}
+            className="w-full"
+            style={{ opacity: isRunning ? 0.4 : 1 }}
+          />
+
+          <div
+            className="flex justify-between text-[10px] mt-1.5"
+            style={{ color: "var(--text-quaternary)" }}
+          >
+            <span>5s (fast)</span>
+            <span>2.5m</span>
+            <span>5m (slow)</span>
+          </div>
+          <p className="text-[11px] mt-2" style={{ color: "var(--text-quaternary)" }}>
+            Min time between emails of the same type per user.
+          </p>
+        </div>
+
         {/* Action buttons */}
         <div className="flex gap-2">
           <button
-            onClick={() => start(rate)}
+            onClick={() => start(rate, emailCooldown)}
             disabled={isRunning || loading}
             className="flex-1 h-9 rounded-lg text-[13px] font-medium transition-all duration-200 cursor-pointer disabled:cursor-not-allowed"
             style={{
@@ -92,7 +136,9 @@ export function SimulationControls() {
             }}
           />
           <span className="text-[12px]" style={{ color: "var(--text-tertiary)" }}>
-            {isRunning ? `Generating ${rate.toLocaleString()} events/min` : "Idle"}
+            {isRunning
+              ? `${rate}/min · email every ${formatCooldown(emailCooldown)}`
+              : "Idle"}
           </span>
         </div>
       </div>
