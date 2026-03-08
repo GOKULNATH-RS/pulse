@@ -101,6 +101,7 @@ async function createTrigger(
 
   // Store trigger and set dedup key (configurable cooldown TTL)
   await redis.lpush(KEYS.CAMPAIGN_QUEUE, JSON.stringify(trigger));
+  await redis.ltrim(KEYS.CAMPAIGN_QUEUE, 0, 499); // keep last 500
   await redis.hincrby(KEYS.METRICS, "campaignsTriggered", 1);
   await redis.set(dedupKey, "1", "EX", emailCooldownSeconds);
 

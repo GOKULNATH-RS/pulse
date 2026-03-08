@@ -26,6 +26,7 @@ export async function sendEmail(payload: EmailPayload): Promise<boolean> {
         ...payload,
         sentAt: Date.now(),
       }));
+      await redis.ltrim(KEYS.EMAIL_SENT, 0, 199); // keep last 200
       return true;
     } else {
       throw new Error(`GAS responded with ${response.status}`);
@@ -39,6 +40,7 @@ export async function sendEmail(payload: EmailPayload): Promise<boolean> {
       failedAt: Date.now(),
       error: String(error),
     }));
+    await redis.ltrim(KEYS.EMAIL_FAILED, 0, 99); // keep last 100
     return false;
   }
 }
@@ -58,6 +60,7 @@ async function simulateEmailSend(payload: EmailPayload): Promise<void> {
       ...payload,
       sentAt: Date.now(),
     }));
+    await redis.ltrim(KEYS.EMAIL_SENT, 0, 199); // keep last 200
   } else {
     await redis.hincrby(KEYS.METRICS, "emailsFailed", 1);
     await redis.hincrby(KEYS.METRICS, "emailsPending", -1);
@@ -66,6 +69,7 @@ async function simulateEmailSend(payload: EmailPayload): Promise<void> {
       failedAt: Date.now(),
       error: "Simulated failure",
     }));
+    await redis.ltrim(KEYS.EMAIL_FAILED, 0, 99); // keep last 100
   }
 }
 

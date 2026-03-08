@@ -11,7 +11,7 @@ export async function processEvent(event: UserEvent): Promise<void> {
     KEYS.EVENT_STREAM,
     "MAXLEN",
     "~",
-    "100000",
+    "5000",
     "*",
     "data",
     JSON.stringify(event)
